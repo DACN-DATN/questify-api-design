@@ -17,21 +17,21 @@
         const ui = SwaggerUIBundle({
           urls: [
             {
-              url: "Questify.swagger.json",
-              name: "Questify.swagger.json",
+              url: 'Questify.swagger.json',
+              name: 'Questify.swagger.json',
             },
           ],
-          dom_id: "#swagger-ui",
+          dom_id: '#swagger-ui',
           deepLinking: true,
           presets: [SwaggerUIBundle.presets.apis, SwaggerUIStandalonePreset],
           plugins: [SwaggerUIBundle.plugins.DownloadUrl],
-          layout: "StandaloneLayout",
+          layout: 'StandaloneLayout',
         });
         window.ui = ui;
       };
     </script>
     <style>
-      .swagger-ui .topbar .download-url-wrapper input[type="text"] {
+      .swagger-ui .topbar .download-url-wrapper input[type='text'] {
         border: 2px solid #77889a;
       }
 
