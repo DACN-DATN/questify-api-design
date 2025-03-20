@@ -1829,6 +1829,505 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
+  # --- Student Progress Tracking Endpoints ---
+  /courses/{courseId}/islands/{islandId}/progress/{studentId}:
+    get:
+      tags: [Course Learning]
+      summary: Get student progress for an island
+      description: Retrieve detailed progress information for a student on a specific island, including completed levels
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: islandId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: studentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Island progress retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  island_id:
+                    type: string
+                    format: uuid
+                  student_id:
+                    type: string
+                    format: uuid
+                  course_id:
+                    type: string
+                    format: uuid
+                  start_date:
+                    type: string
+                    format: date-time
+                  finish_date:
+                    type: string
+                    format: date-time
+                    nullable: true
+                  completed_levels:
+                    type: array
+                    items:
+                      type: string
+                      format: uuid
+                  total_levels:
+                    type: integer
+                  completion_percentage:
+                    type: number
+                    format: float
+                  levels:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        level_id:
+                          type: string
+                          format: uuid
+                        name:
+                          type: string
+                        status:
+                          type: string
+                          enum: [not_started, in_progress, completed]
+                        progress:
+                          type: object
+                          additionalProperties: true
+                        started_at:
+                          type: string
+                          format: date-time
+                          nullable: true
+                        completed_at:
+                          type: string
+                          format: date-time
+                          nullable: true
+        '403':
+          description: Forbidden - User doesn't have permission to view this progress
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Course, island or student not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /courses/{courseId}/progress/{studentId}:
+    get:
+      tags: [Course Learning]
+      summary: Get student progress for a course
+      description: Retrieve detailed progress information for a student on a specific course, including completed islands
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: studentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Course progress retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  course_id:
+                    type: string
+                    format: uuid
+                  student_id:
+                    type: string
+                    format: uuid
+                  start_date:
+                    type: string
+                    format: date-time
+                  finish_date:
+                    type: string
+                    format: date-time
+                    nullable: true
+                  completed_islands:
+                    type: array
+                    items:
+                      type: string
+                      format: uuid
+                  total_islands:
+                    type: integer
+                  completion_percentage:
+                    type: number
+                    format: float
+                  islands:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        island_id:
+                          type: string
+                          format: uuid
+                        name:
+                          type: string
+                        position:
+                          type: integer
+                        status:
+                          type: string
+                          enum: [locked, unlocked, in_progress, completed]
+                        progress:
+                          type: object
+                          additionalProperties: true
+                        completion_percentage:
+                          type: number
+                          format: float
+                        started_at:
+                          type: string
+                          format: date-time
+                          nullable: true
+                        completed_at:
+                          type: string
+                          format: date-time
+                          nullable: true
+        '403':
+          description: Forbidden - User doesn't have permission to view this progress
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Course or student not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /students/{studentId}/progress:
+    get:
+      tags: [Course Learning]
+      summary: Get overall student progress
+      description: Retrieve summary progress information for all courses a student is enrolled in
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: studentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '200':
+          description: Student overall progress retrieved successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  student_id:
+                    type: string
+                    format: uuid
+                  total_courses:
+                    type: integer
+                  completed_courses:
+                    type: integer
+                  in_progress_courses:
+                    type: integer
+                  not_started_courses:
+                    type: integer
+                  courses:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        course_id:
+                          type: string
+                          format: uuid
+                        name:
+                          type: string
+                        status:
+                          type: string
+                          enum: [not_started, in_progress, completed]
+                        completion_percentage:
+                          type: number
+                          format: float
+                        start_date:
+                          type: string
+                          format: date-time
+                          nullable: true
+                        finish_date:
+                          type: string
+                          format: date-time
+                          nullable: true
+        '403':
+          description: Forbidden - User doesn't have permission to view this progress
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Student not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /students/{studentId}/courses/{courseId}/progress:
+    post:
+      tags: [Course Learning]
+      summary: Initialize course progress
+      description: Create initial progress record when a student enrolls in a course
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: studentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      responses:
+        '201':
+          description: Course progress initialized successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Progress'
+        '400':
+          description: Invalid request - Student may already have progress for this course
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden - User doesn't have permission to initialize progress
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Course or student not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+    patch:
+      tags: [Course Learning]
+      summary: Update course progress
+      description: Update a student's progress for an entire course
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: studentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: courseId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                progress:
+                  type: object
+                  additionalProperties: true
+                  description: JSON data containing progress details specific to the course
+                status:
+                  type: string
+                  enum: [in_progress, completed]
+                  description: Current status of the course
+                finish_date:
+                  type: string
+                  format: date-time
+                  description: Timestamp when the course was completed (if completed)
+      responses:
+        '200':
+          description: Course progress updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Progress'
+        '400':
+          description: Invalid progress data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden - User doesn't have permission to update progress
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Course or student not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /students/{studentId}/levels/{levelId}/progress:
+    patch:
+      tags: [Course Learning]
+      summary: Update level progress
+      description: Update a student's progress on a specific level
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: studentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: levelId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                progress:
+                  type: object
+                  additionalProperties: true
+                  description: JSON data containing progress details specific to the level
+                status:
+                  type: string
+                  enum: [in_progress, completed]
+                  description: Current status of the level
+                finish_date:
+                  type: string
+                  format: date-time
+                  description: Timestamp when the level was completed (if completed)
+      responses:
+        '200':
+          description: Level progress updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Progress'
+        '400':
+          description: Invalid progress data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden - User doesn't have permission to update progress
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Level or student not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /students/{studentId}/islands/{islandId}/progress:
+    patch:
+      tags: [Course Learning]
+      summary: Update island progress
+      description: Update a student's progress on an entire island
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: studentId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+        - name: islandId
+          in: path
+          required: true
+          schema:
+            type: string
+            format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                progress:
+                  type: object
+                  additionalProperties: true
+                  description: JSON data containing progress details specific to the island
+                status:
+                  type: string
+                  enum: [in_progress, completed]
+                  description: Current status of the island
+                finish_date:
+                  type: string
+                  format: date-time
+                  description: Timestamp when the island was completed (if completed)
+      responses:
+        '200':
+          description: Island progress updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Progress'
+        '400':
+          description: Invalid progress data
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '403':
+          description: Forbidden - User doesn't have permission to update progress
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Island or student not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
 
   # --- User Management ---
   /admin/users:
